@@ -17,15 +17,12 @@
 
 package co.rsk.bitcoinj.core;
 
-import co.rsk.bitcoinj.core.TransactionConfidence.ConfidenceType;
 import co.rsk.bitcoinj.crypto.TransactionSignature;
 import co.rsk.bitcoinj.script.Script;
 import co.rsk.bitcoinj.script.ScriptBuilder;
 import co.rsk.bitcoinj.script.ScriptOpCodes;
 import co.rsk.bitcoinj.signers.TransactionSigner;
-import co.rsk.bitcoinj.utils.ExchangeRate;
 import co.rsk.bitcoinj.wallet.Wallet;
-import co.rsk.bitcoinj.wallet.WalletTransaction.Pool;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
@@ -73,17 +70,6 @@ public class Transaction extends ChildMessage {
             return updateTimeComparison != 0 ? updateTimeComparison : tx1.getHash().compareTo(tx2.getHash());
         }
     };
-    /** A comparator that can be used to sort transactions by their chain height. */
-    public static final Comparator<Transaction> SORT_TX_BY_HEIGHT = new Comparator<Transaction>() {
-        @Override
-        public int compare(final Transaction tx1, final Transaction tx2) {
-            final int height1 = tx1.getConfidence().getAppearedAtChainHeight();
-            final int height2 = tx2.getConfidence().getAppearedAtChainHeight();
-            final int heightComparison = -(Ints.compare(height1, height2));
-            //If height1==height2, compare by tx hash to make comparator consistent with equals
-            return heightComparison != 0 ? heightComparison : tx1.getHash().compareTo(tx2.getHash());
-        }
-    };
     private static final Logger log = LoggerFactory.getLogger(Transaction.class);
 
     /** Threshold for lockTime: below this value it is interpreted as block number, otherwise as timestamp. **/
@@ -128,9 +114,6 @@ public class Transaction extends ChildMessage {
     // This is an in memory helper only.
     private Sha256Hash hash;
 
-    // Data about how confirmed this tx is. Serialized, may be null.
-    @Nullable private TransactionConfidence confidence;
-
     // Records a map of which blocks the transaction has appeared in (keys) to an index within that block (values).
     // The "index" is not a real index, instead the values are only meaningful relative to each other. For example,
     // consider two transactions that appear in the same block, t1 and t2, where t2 spends an output of t1. Both
@@ -172,13 +155,6 @@ public class Transaction extends ChildMessage {
     }
 
     private Purpose purpose = Purpose.UNKNOWN;
-
-    /**
-     * This field can be used by applications to record the exchange rate that was valid when the transaction happened.
-     * It's optional.
-     */
-    @Nullable
-    private ExchangeRate exchangeRate;
 
     /**
      * This field can be used to record the memo of the payment request that initiated the transaction. It's optional.
@@ -300,14 +276,6 @@ public class Transaction extends ChildMessage {
     }
 
     /**
-     * Convenience wrapper around getConfidence().getConfidenceType()
-     * @return true if this transaction hasn't been seen in any block yet.
-     */
-    public boolean isPending() {
-        return getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.PENDING;
-    }
-
-    /**
      * <p>Puts the given block in the internal set of blocks in which this transaction appears. This is
      * used by the wallet to ensure transactions that appear on side chains are recorded properly even though the
      * block stores do not save the transaction data at all.</p>
@@ -328,12 +296,6 @@ public class Transaction extends ChildMessage {
         }
 
         addBlockAppearance(block.getHeader().getHash(), relativityOffset);
-
-        if (bestChain) {
-            TransactionConfidence transactionConfidence = getConfidence();
-            // This sets type to BUILDING and depth to one.
-            transactionConfidence.setAppearedAtChainHeight(block.getHeight());
-        }
     }
 
     public void addBlockAppearance(final Sha256Hash blockHash, int relativityOffset) {
@@ -608,19 +570,6 @@ public class Transaction extends ChildMessage {
      */
     public boolean isCoinBase() {
         return inputs.size() == 1 && inputs.get(0).isCoinBase();
-    }
-
-    /**
-     * A transaction is mature if it is either a building coinbase tx that is as deep or deeper than the required coinbase depth, or a non-coinbase tx.
-     */
-    public boolean isMature() {
-        if (!isCoinBase())
-            return true;
-
-        if (getConfidence().getConfidenceType() != ConfidenceType.BUILDING)
-            return false;
-
-        return getConfidence().getDepthInBlocks() >= params.getSpendableCoinbaseDepth();
     }
 
     @Override
@@ -1146,36 +1095,6 @@ public class Transaction extends ChildMessage {
         return outputs.get((int)index);
     }
 
-    /**
-     * Returns the confidence object for this transaction from the {@link co.rsk.bitcoinj.core.TxConfidenceTable}
-     * referenced by the implicit {@link Context}.
-     */
-    public TransactionConfidence getConfidence() {
-        return getConfidence(Context.get());
-    }
-
-    /**
-     * Returns the confidence object for this transaction from the {@link co.rsk.bitcoinj.core.TxConfidenceTable}
-     * referenced by the given {@link Context}.
-     */
-    public TransactionConfidence getConfidence(Context context) {
-        return getConfidence(context.getConfidenceTable());
-    }
-
-    /**
-     * Returns the confidence object for this transaction from the {@link co.rsk.bitcoinj.core.TxConfidenceTable}
-     */
-    public TransactionConfidence getConfidence(TxConfidenceTable table) {
-        if (confidence == null)
-            confidence = table.getOrCreate(getHash()) ;
-        return confidence;
-    }
-
-    /** Check if the transaction has a known confidence */
-    public boolean hasConfidence() {
-        return getConfidence().getConfidenceType() != TransactionConfidence.ConfidenceType.UNKNOWN;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -1343,21 +1262,6 @@ public class Transaction extends ChildMessage {
      */
     public void setPurpose(Purpose purpose) {
         this.purpose = purpose;
-    }
-
-    /**
-     * Getter for {@link #exchangeRate}.
-     */
-    @Nullable
-    public ExchangeRate getExchangeRate() {
-        return exchangeRate;
-    }
-
-    /**
-     * Setter for {@link #exchangeRate}.
-     */
-    public void setExchangeRate(ExchangeRate exchangeRate) {
-        this.exchangeRate = exchangeRate;
     }
 
     /**
