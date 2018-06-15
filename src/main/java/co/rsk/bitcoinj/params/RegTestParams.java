@@ -17,6 +17,8 @@
 package co.rsk.bitcoinj.params;
 
 import co.rsk.bitcoinj.core.BtcBlock;
+import co.rsk.bitcoinj.core.Sha256Hash;
+import co.rsk.bitcoinj.core.Utils;
 
 import java.math.BigInteger;
 
@@ -33,14 +35,31 @@ public class RegTestParams extends TestNet2Params {
         // Difficulty adjustments are disabled for regtest. 
         // By setting the block interval for difficulty adjustments to Integer.MAX_VALUE we make sure difficulty never changes.    
         interval = Integer.MAX_VALUE;
-        maxTarget = MAX_TARGET;
         subsidyDecreaseBlockCount = 150;
-        port = 18444;
+
         id = ID_REGTEST;
+        packetMagic = Pai.RegTest.packetMagic;
+        port = Pai.RegTest.port;
+        maxTarget = Utils.decodeCompactBits(Pai.RegTest.GENESIS_BLOCK_NBITS);
+
+        addressHeader = Pai.RegTest.addressHeader;
+        p2shHeader = Pai.RegTest.p2shHeader;
+        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
+        dumpedPrivateKeyHeader = Pai.RegTest.dumpedPrivateKeyHeader;
+        genesisBlock.setTime(Pai.RegTest.GENESIS_BLOCK_UNIX_TIMESTAMP);
+        genesisBlock.setDifficultyTarget(Pai.RegTest.GENESIS_BLOCK_NBITS);
+        genesisBlock.setNonce(Pai.RegTest.GENESIS_BLOCK_NONCE);
+
+        String genesisHash = genesisBlock.getHashAsString();
+        checkState(genesisHash.equals(Pai.RegTest.CONSENSUS_HASH_GENESIS_BLOCK));
+
+        bip32HeaderPub = Pai.RegTest.bip32HeaderPub;
+        bip32HeaderPriv = Pai.RegTest.bip32HeaderPriv;
 
         majorityEnforceBlockUpgrade = MainNetParams.MAINNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = MainNetParams.MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = MainNetParams.MAINNET_MAJORITY_WINDOW;
+        checkpoints.put(0, Sha256Hash.wrap(Pai.RegTest.CONSENSUS_HASH_GENESIS_BLOCK));
     }
 
     @Override
@@ -55,10 +74,10 @@ public class RegTestParams extends TestNet2Params {
         synchronized (RegTestParams.class) {
             if (genesis == null) {
                 genesis = super.getGenesisBlock();
-                genesis.setNonce(2);
-                genesis.setDifficultyTarget(0x207fFFFFL);
-                genesis.setTime(1296688602L);
-                checkState(genesis.getHashAsString().toLowerCase().equals("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"));
+                genesis.setNonce(0);
+                genesis.setDifficultyTarget(0x207fffff);
+                genesis.setTime(1509798928L);
+                checkState(genesis.getHashAsString().toLowerCase().equals("47b736c948f15d787327c84bb3ad30a064e67c79154c7608da4b062c1adfe7bb"));
             }
             return genesis;
         }

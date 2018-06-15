@@ -20,11 +20,7 @@ package co.rsk.bitcoinj.params;
 import java.math.BigInteger;
 import java.util.Date;
 
-import co.rsk.bitcoinj.core.BtcBlock;
-import co.rsk.bitcoinj.core.NetworkParameters;
-import co.rsk.bitcoinj.core.StoredBlock;
-import co.rsk.bitcoinj.core.Utils;
-import co.rsk.bitcoinj.core.VerificationException;
+import co.rsk.bitcoinj.core.*;
 import co.rsk.bitcoinj.store.BtcBlockStore;
 import co.rsk.bitcoinj.store.BlockStoreException;
 
@@ -38,37 +34,34 @@ public class TestNet3Params extends AbstractBitcoinNetParams {
     public TestNet3Params() {
         super();
         id = ID_TESTNET;
-        // Genesis hash is 000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943
-        packetMagic = 0x0b110907;
+
+        packetMagic = Pai.TestNet.packetMagic;
         interval = INTERVAL;
         targetTimespan = TARGET_TIMESPAN;
-        maxTarget = Utils.decodeCompactBits(0x1d00ffffL);
-        port = 18333;
-        addressHeader = 111;
-        p2shHeader = 196;
+        maxTarget = Utils.decodeCompactBits(Pai.TestNet.GENESIS_BLOCK_NBITS);
+        port = Pai.TestNet.port;
+        addressHeader = Pai.TestNet.addressHeader;
+        p2shHeader = Pai.TestNet.p2shHeader;
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
-        dumpedPrivateKeyHeader = 239;
-        genesisBlock.setTime(1296688602L);
-        genesisBlock.setDifficultyTarget(0x1d00ffffL);
-        genesisBlock.setNonce(414098458);
+        dumpedPrivateKeyHeader = Pai.TestNet.dumpedPrivateKeyHeader;
+        genesisBlock.setTime(Pai.TestNet.GENESIS_BLOCK_UNIX_TIMESTAMP);
+        genesisBlock.setDifficultyTarget(Pai.TestNet.GENESIS_BLOCK_NBITS);
+        genesisBlock.setNonce(Pai.TestNet.GENESIS_BLOCK_NONCE);
         spendableCoinbaseDepth = 100;
         subsidyDecreaseBlockCount = 210000;
         String genesisHash = genesisBlock.getHashAsString();
-        checkState(genesisHash.equals("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
+        checkState(genesisHash.equals(Pai.TestNet.CONSENSUS_HASH_GENESIS_BLOCK));
 
-        dnsSeeds = new String[] {
-                "testnet-seed.bitcoin.jonasschnelli.ch", // Jonas Schnelli
-                "testnet-seed.bluematt.me",              // Matt Corallo
-                "testnet-seed.bitcoin.petertodd.org",    // Peter Todd
-                "testnet-seed.bitcoin.schildbach.de",    // Andreas Schildbach
-        };
+        dnsSeeds = Pai.TestNet.dnsSeeds;
         addrSeeds = null;
-        bip32HeaderPub = 0x043587CF;
-        bip32HeaderPriv = 0x04358394;
+        bip32HeaderPub = Pai.TestNet.bip32HeaderPub;
+        bip32HeaderPriv = Pai.TestNet.bip32HeaderPriv;
 
         majorityEnforceBlockUpgrade = TestNet2Params.TESTNET_MAJORITY_ENFORCE_BLOCK_UPGRADE;
         majorityRejectBlockOutdated = TestNet2Params.TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = TestNet2Params.TESTNET_MAJORITY_WINDOW;
+
+        checkpoints.put(0, Sha256Hash.wrap(Pai.TestNet.CONSENSUS_HASH_GENESIS_BLOCK));
     }
 
     private static TestNet3Params instance;

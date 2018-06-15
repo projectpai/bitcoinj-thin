@@ -36,7 +36,7 @@ public class TestNet2Params extends AbstractBitcoinNetParams {
         port = 18333;
         addressHeader = 111;
         p2shHeader = 196;
-        acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
+        acceptableAddressCodes = new int[] {addressHeader, p2shHeader};
         interval = INTERVAL;
         targetTimespan = TARGET_TIMESPAN;
         maxTarget = Utils.decodeCompactBits(0x1d0fffffL);
@@ -59,6 +59,7 @@ public class TestNet2Params extends AbstractBitcoinNetParams {
     }
 
     private static TestNet2Params instance;
+
     public static synchronized TestNet2Params get() {
         if (instance == null) {
             instance = new TestNet2Params();
