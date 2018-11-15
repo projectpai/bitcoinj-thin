@@ -68,4 +68,10 @@ public class UnitTestParams extends AbstractBitcoinNetParams {
     public String getPaymentProtocolId() {
         return "unittest";
     }
+
+    @Override
+    protected String getGenesisScriptSignature() {
+        return "";
+    }
+
 }

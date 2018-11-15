@@ -16,6 +16,7 @@
 
 package co.rsk.bitcoinj.core;
 
+import co.rsk.bitcoinj.params.Pai;
 import co.rsk.bitcoinj.utils.MonetaryFormat;
 import com.google.common.math.LongMath;
 import com.google.common.primitives.Longs;
@@ -71,7 +72,7 @@ public final class Coin implements Monetary, Comparable<Coin>, Serializable {
      */
     public static final Coin SATOSHI = Coin.valueOf(1);
 
-    public static final Coin FIFTY_COINS = COIN.multiply(50);
+    public static final Coin FIFTY_COINS = COIN.multiply(Pai.BLOCK_REWARD);
 
     /**
      * Represents a monetary value of minus one satoshi.

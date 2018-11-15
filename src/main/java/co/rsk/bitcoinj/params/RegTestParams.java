@@ -16,32 +16,27 @@
 
 package co.rsk.bitcoinj.params;
 
-import co.rsk.bitcoinj.core.BtcBlock;
 import co.rsk.bitcoinj.core.Sha256Hash;
 import co.rsk.bitcoinj.core.Utils;
-
-import java.math.BigInteger;
 
 import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Network parameters for the regression test mode of bitcoind in which all blocks are trivially solvable.
  */
-public class RegTestParams extends TestNet2Params {
-    private static final BigInteger MAX_TARGET = new BigInteger("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16);
+public class RegTestParams extends AbstractBitcoinNetParams {
 
     public RegTestParams() {
         super();
         // Difficulty adjustments are disabled for regtest. 
         // By setting the block interval for difficulty adjustments to Integer.MAX_VALUE we make sure difficulty never changes.    
-        interval = Integer.MAX_VALUE;
-        subsidyDecreaseBlockCount = 150;
 
         id = ID_REGTEST;
         packetMagic = Pai.RegTest.packetMagic;
-        port = Pai.RegTest.port;
+        interval = Integer.MAX_VALUE;
+        targetTimespan = TARGET_TIMESPAN;
         maxTarget = Utils.decodeCompactBits(Pai.RegTest.GENESIS_BLOCK_NBITS);
-
+        port = Pai.RegTest.port;
         addressHeader = Pai.RegTest.addressHeader;
         p2shHeader = Pai.RegTest.p2shHeader;
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
@@ -49,10 +44,14 @@ public class RegTestParams extends TestNet2Params {
         genesisBlock.setTime(Pai.RegTest.GENESIS_BLOCK_UNIX_TIMESTAMP);
         genesisBlock.setDifficultyTarget(Pai.RegTest.GENESIS_BLOCK_NBITS);
         genesisBlock.setNonce(Pai.RegTest.GENESIS_BLOCK_NONCE);
+        spendableCoinbaseDepth = 100;
+        subsidyDecreaseBlockCount = 150;
 
         String genesisHash = genesisBlock.getHashAsString();
         checkState(genesisHash.equals(Pai.RegTest.CONSENSUS_HASH_GENESIS_BLOCK));
 
+        dnsSeeds = null;
+        addrSeeds = null;
         bip32HeaderPub = Pai.RegTest.bip32HeaderPub;
         bip32HeaderPriv = Pai.RegTest.bip32HeaderPriv;
 
@@ -67,22 +66,6 @@ public class RegTestParams extends TestNet2Params {
         return true;
     }
 
-    private static BtcBlock genesis;
-
-    @Override
-    public BtcBlock getGenesisBlock() {
-        synchronized (RegTestParams.class) {
-            if (genesis == null) {
-                genesis = super.getGenesisBlock();
-                genesis.setNonce(0);
-                genesis.setDifficultyTarget(0x207fffff);
-                genesis.setTime(1509798928L);
-                checkState(genesis.getHashAsString().toLowerCase().equals("47b736c948f15d787327c84bb3ad30a064e67c79154c7608da4b062c1adfe7bb"));
-            }
-            return genesis;
-        }
-    }
-
     private static RegTestParams instance;
     public static synchronized RegTestParams get() {
         if (instance == null) {
@@ -95,4 +78,10 @@ public class RegTestParams extends TestNet2Params {
     public String getPaymentProtocolId() {
         return PAYMENT_PROTOCOL_ID_REGTEST;
     }
+
+    @Override
+    protected String getGenesisScriptSignature() {
+        return Pai.RegTest.GENESIS_BLOCK_SIGNATURE;
+    }
+
 }

@@ -82,4 +82,9 @@ public class MainNetParams extends AbstractBitcoinNetParams {
     public String getPaymentProtocolId() {
         return PAYMENT_PROTOCOL_ID_MAINNET;
     }
+
+    @Override
+    protected String getGenesisScriptSignature() {
+        return Pai.MainNet.GENESIS_BLOCK_SIGNATURE;
+    }
 }

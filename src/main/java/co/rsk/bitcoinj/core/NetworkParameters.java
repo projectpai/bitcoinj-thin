@@ -95,25 +95,28 @@ public abstract class NetworkParameters {
     protected Map<Integer, Sha256Hash> checkpoints = new HashMap<Integer, Sha256Hash>();
     protected transient MessageSerializer defaultSerializer = null;
 
+    protected abstract String getGenesisScriptSignature();
+
     protected NetworkParameters() {
-        genesisBlock = createGenesis(this);
+        genesisBlock = createGenesis(this, getGenesisScriptSignature());
     }
 
-    private static BtcBlock createGenesis(NetworkParameters n) {
+    private static BtcBlock createGenesis(NetworkParameters n, String scriptSignature) {
         BtcBlock genesisBlock = new BtcBlock(n, BtcBlock.BLOCK_VERSION_GENESIS);
         BtcTransaction t = new BtcTransaction(n);
         try {
             // A script containing the difficulty bits and the following message:
             //
             //   "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
-            byte[] bytes = Utils.HEX.decode
-                    ("04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73");
+            byte[] bytes = Utils.HEX.decode(Pai.GENESIS_BLOCK_TIMESTAMP_STRING);
             t.addInput(new TransactionInput(n, t, bytes));
             ByteArrayOutputStream scriptPubKeyBytes = new ByteArrayOutputStream();
-            Script.writeBytes(scriptPubKeyBytes, Utils.HEX.decode
-                    ("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f"));
-            scriptPubKeyBytes.write(ScriptOpCodes.OP_CHECKSIG);
-            t.addOutput(new TransactionOutput(n, t, FIFTY_COINS, scriptPubKeyBytes.toByteArray()));
+
+            scriptPubKeyBytes.write(ScriptOpCodes.OP_HASH160);
+            Script.writeBytes(scriptPubKeyBytes, Utils.HEX.decode(scriptSignature));
+            scriptPubKeyBytes.write(ScriptOpCodes.OP_EQUAL);
+
+            t.addOutput(new TransactionOutput(n, t, COIN.multiply(Pai.GENESIS_BLOCK_REWARD), scriptPubKeyBytes.toByteArray()));
         } catch (Exception e) {
             // Cannot happen.
             throw new RuntimeException(e);
@@ -136,7 +139,7 @@ public abstract class NetworkParameters {
     /**
      * The maximum number of coins to be generated
      */
-    public static final long MAX_COINS = 21000000;
+    public static final long MAX_COINS = Pai.MAX_COINS;
 
     /**
      * The maximum money to be generated

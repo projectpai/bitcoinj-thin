@@ -111,4 +111,9 @@ public class TestNet3Params extends AbstractBitcoinNetParams {
             super.checkDifficultyTransitions(storedPrev, nextBlock, blockStore);
         }
     }
+
+    @Override
+    protected String getGenesisScriptSignature() {
+        return Pai.TestNet.GENESIS_BLOCK_SIGNATURE;
+    }
 }

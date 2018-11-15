@@ -21,6 +21,7 @@ import com.google.common.annotations.*;
 import com.google.common.base.*;
 import com.google.common.collect.*;
 import co.rsk.bitcoinj.script.*;
+import co.rsk.bitcoinj.params.*;
 import org.slf4j.*;
 
 import javax.annotation.*;
@@ -81,7 +82,7 @@ public class BtcBlock extends Message {
     /** Height of the first block */
     public static final int BLOCK_HEIGHT_GENESIS = 0;
 
-    public static final long BLOCK_VERSION_GENESIS = 1;
+    public static final long BLOCK_VERSION_GENESIS = Pai.BLOCK_VERSION_GENESIS;
     /** Block version introduced in BIP 34: Height in coinbase */
     public static final long BLOCK_VERSION_BIP34 = 2;
     /** Block version introduced in BIP 66: Strict DER signatures */
