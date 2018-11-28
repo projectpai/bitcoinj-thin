@@ -12,7 +12,8 @@ import java.util.List;
  */
 public class BlockchainAddResult {
 
-	private Boolean success = Boolean.FALSE;
+	private boolean success = false;
+	private boolean exists = false;
 
 	private List<BtcBlock> orphansBlocksConnected = new ArrayList<BtcBlock>();
 	private List<FilteredBlock> orphansFilteredBlocksConnected = new ArrayList<FilteredBlock>();
@@ -43,12 +44,19 @@ public class BlockchainAddResult {
 		return orphansFilteredBlocksConnected;
 	}
 
-	public void setSuccess(Boolean success) {
+	public void setSuccess(boolean success) {
 		this.success = success;
 	}
 
-	public Boolean success() {
+	public boolean success() {
 		return success;
 	}
 
+	public void setExists(boolean exists) {
+		this.exists = exists;
+	}
+
+	public boolean exists() {
+		return exists;
+	}
 }
