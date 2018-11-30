@@ -291,6 +291,7 @@ public abstract class BtcAbstractBlockChain {
             // Check for already-seen block.
             if (blockStore.get(block.getHash()) != null) {
                 result.setSuccess(Boolean.TRUE);
+                result.setExists(Boolean.TRUE);
                 return result;
             }
 
